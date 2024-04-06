@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MetaMask Connection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>MetaMask Connection Example</h1>
+  <button id="installBtn">Install MetaMask</button>
+  <button id="connectBtn" style="display: none;">Connect to MetaMask</button>
+  <div id="status"></div>
+  <button id="disconnectBtn" style="display: none;">Disconnect</button>
+
+  <script>
+    // Function to check if MetaMask is installed
+    function checkMetaMask() {
+      if (typeof window.ethereum !== 'undefined') {
+        return true;
+      }
+      return false;
+    }
+
+    // Function to connect MetaMask
+    async function connectMetaMask() {
+      try {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        updateStatus(true);
+      } catch (error) {
+        console.error(error);
+        updateStatus(false);
+      }
+    }
+
+    // Function to update connection status
+    function updateStatus(connected) {
+      const statusElement = document.getElementById('status');
+      const connectBtn = document.getElementById('connectBtn');
+      const disconnectBtn = document.getElementById('disconnectBtn');
+
+      if (connected) {
+        statusElement.textContent = 'Connection successful. Wallet address: ' + window.ethereum.selectedAddress;
+        connectBtn.style.display = 'none';
+        disconnectBtn.style.display = 'inline-block';
+      } else {
+        statusElement.textContent = 'Connection failed.';
+        connectBtn.style.display = 'inline-block';
+        disconnectBtn.style.display = 'none';
+      }
+    }
+
+    // Function to disconnect MetaMask
+    function disconnectMetaMask() {
+      window.ethereum.request({ method: 'wallet_requestPermissions', params: [{ eth_accounts: {} }] })
+        .then(() => {
+          window.ethereum.selectedAddress = null;
+          updateStatus(false);
+        })
+        .catch((error) => console.error(error));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const installBtn = document.getElementById('installBtn');
+      const connectBtn = document.getElementById('connectBtn');
+      const disconnectBtn = document.getElementById('disconnectBtn');
+
+      // Check if MetaMask is installed
+      if (!checkMetaMask()) {
+        installBtn.style.display = 'inline-block';
+        connectBtn.style.display = 'none';
+      } else {
+        installBtn.style.display = 'none';
+        connectBtn.style.display = 'inline-block';
+      }
+
+      // Add event listener for install button
+      installBtn.addEventListener('click', () => {
+        window.open('https://metamask.io/download.html', '_blank');
+      });
+
+      // Add event listener for connect button
+      connectBtn.addEventListener('click', connectMetaMask);
+
+      // Add event listener for disconnect button
+      disconnectBtn.addEventListener('click', disconnectMetaMask);
+    });
+  </script>
+</body>
+</html>
